@@ -2,13 +2,13 @@
 
 module tb_bcd_7448();
 
-reg [3:0] BCD;
+reg [3:0] bcd;
 reg LT, BI, RBI;
 wire [6:0] seg;
 
-// Instantiate DUT
+// Instantiate DUT (Device Under Test)
 bcd_7448 dut (
-    .BCD(BCD),
+    .bcd(bcd),
     .LT(LT),
     .BI(BI),
     .RBI(RBI),
@@ -16,39 +16,45 @@ bcd_7448 dut (
 );
 
 initial begin
-    $dumpfile("7448.vcd");   // for GTKWave
-    $dumpvars(0, tb_ic7448);
+    // Dump waveform if using GTKWave (optional for Vivado)
+    // $dumpfile("bcd_7448.vcd");
+    // $dumpvars(0, tb_bcd_7448);
 
-    // Default : all control inputs HIGH
-    LT  = 1;
-    BI  = 1;
-    RBI = 1;
+    // Initialize
+    LT = 1; BI = 1; RBI = 1; 
+    bcd = 4'd0;
 
-    // Test all digits 0-9
-    $display("Testing BCD 0-9...");
-    for (integer i = 0; i < 10; i = i + 1) begin
-        BCD = i;
-        #10;
-    end
+    #10 bcd = 4'd1;
+    #10 bcd = 4'd2;
+    #10 bcd = 4'd3;
+    #10 bcd = 4'd4;
+    #10 bcd = 4'd5;
+    #10 bcd = 4'd6;
+    #10 bcd = 4'd7;
+    #10 bcd = 4'd8;
+    #10 bcd = 4'd9;
 
-    // Test BI = LOW (blanking)
-    $display("Testing BI low blanking...");
-    BI = 0;  BCD = 4'd5;  #10;
-    BI = 1;
+    // Test A-F cases (10-15)
+    #10 bcd = 4'd10;
+    #10 bcd = 4'd11;
+    #10 bcd = 4'd12;
+    #10 bcd = 4'd13;
+    #10 bcd = 4'd14;
+    #10 bcd = 4'd15;
 
-    // Test LT = LOW (lamp test)
-    $display("Testing LT low (all ON)...");
-    LT = 0; BCD = 4'd3;   #10;
-    LT = 1;
+    // Test BI Blanking
+    #10 BI = 0; // Blanking Input active → display off
+    #10 BI = 1;
+
+    // Test LT Lamp Test
+    #10 LT = 0; // All segments ON
+    #10 LT = 1;
 
     // Test RBI leading zero blanking
-    $display("Testing RBI leading-zero blanking...");
-    RBI = 0; BCD = 4'd0;  #10;
-    RBI = 1;
+    #10 bcd = 0; RBI = 0; // leading zero → blank
+    #10 RBI = 1;          // show zero normally
 
-    // End simulation
-    $finish;
+    #10 $stop;  // End simulation
 end
 
 endmodule
-
